@@ -1,0 +1,20 @@
+{
+  "name": "aafm-hosted-server",
+  "version": "2.0.0",
+  "description": "AAFM Hosted MCP Server — remote HTTP transport",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.0",
+    "@supabase/supabase-js": "^2.49.0",
+    "express": "^4.21.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
