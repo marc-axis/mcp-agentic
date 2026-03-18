@@ -19,7 +19,7 @@ export function hashKey(key) {
 // Validate API key and return { id, client_name } or null
 export async function validateApiKey(rawKey) {
   const hash = hashKey(rawKey);
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from("api_keys")
     .select("id, client_name")
     .eq("key_hash", hash)
@@ -40,7 +40,7 @@ export async function logUsage(apiKeyId, toolName, featureSlug = null) {
 
 // Load feature state — throws if not found
 export async function loadFeature(apiKeyId, slug) {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from("features")
     .select("id, state")
     .eq("api_key_id", apiKeyId)
@@ -91,7 +91,7 @@ export async function getArtifactBySlug(apiKeyId, slug, artifactType) {
 
 // Internal helpers
 async function getFeatureId(apiKeyId, slug) {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from("features")
     .select("id")
     .eq("api_key_id", apiKeyId)
@@ -102,7 +102,7 @@ async function getFeatureId(apiKeyId, slug) {
 }
 
 async function getArtifact(featureId, artifactType) {
-  const { data } = await supabase
+  const { data } = await getClient()
     .from("feature_artifacts")
     .select("content")
     .eq("feature_id", featureId)
