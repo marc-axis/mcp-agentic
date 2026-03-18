@@ -1,0 +1,12 @@
+{
+  "name": "aafm-hosted",
+  "version": "2.0.0",
+  "description": "AAFM Hosted MCP Server",
+  "scripts": {
+    "install": "cd server && npm ci",
+    "start": "cd server && node index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
