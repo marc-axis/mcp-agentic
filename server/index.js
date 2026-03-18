@@ -28,7 +28,7 @@ const sseSessions = new Map();
 app.get("/sse", requireApiKey, async (req, res) => {
   const transport = new SSEServerTransport("/sse/message", res);
   const mcpServer = buildMcpServer(req.apiKeyId);
-  sseSessions.set(transport.sessionId, { transport, mcpServer });
+  sseSessions.set(transport.sessionId, { transport, mcpServer, apiKeyId: req.apiKeyId });
   res.on("close", () => {
     sseSessions.delete(transport.sessionId);
     mcpServer.close().catch(() => {});
@@ -40,6 +40,7 @@ app.post("/sse/message", requireApiKey, async (req, res) => {
   const sessionId = req.query.sessionId;
   const session = sseSessions.get(sessionId);
   if (!session) return res.status(404).json({ error: "Session not found" });
+  if (session.apiKeyId !== req.apiKeyId) return res.status(403).json({ error: "Session does not belong to this API key." });
   await session.transport.handlePostMessage(req, res, req.body);
 });
 
@@ -63,6 +64,14 @@ function buildMcpServer(apiKeyId) {
   });
 
   return server;
+}
+
+// ── Startup validation ────────────────────────────────────────────────────
+for (const key of ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]) {
+  if (!process.env[key]) {
+    console.error(`FATAL: Missing required environment variable: ${key}`);
+    process.exit(1);
+  }
 }
 
 // ── Start ─────────────────────────────────────────────────────────────────

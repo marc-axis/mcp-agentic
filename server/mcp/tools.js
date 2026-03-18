@@ -21,8 +21,8 @@ import {
 
 const __filename = fileURLToPath(import.meta.url);
 const SERVER_DIR = path.dirname(__filename);
-// Prompts live on disk, deployed alongside the server under aafm-mcp/prompts/
-const PROMPTS_DIR = path.resolve(SERVER_DIR, "../../aafm-mcp/prompts");
+// Prompts live in server/prompts/, deployed alongside the server
+const PROMPTS_DIR = path.resolve(SERVER_DIR, "../prompts");
 
 // ── Phase constants ───────────────────────────────────────────────────────
 const PHASES = ["pre-flight", "P41", "P41-human-review", "P42", "P43", "P44", "complete"];
@@ -415,6 +415,26 @@ export const TOOLS = [
         },
       },
       required: ["feature_slug"],
+    },
+  },
+  {
+    name: "save_artifact",
+    description:
+      "Save a phase artifact (Plan, Build, ToDo, or Lessons-Learned) to the server. " +
+      "Call this after generating each artifact so advance_phase can verify it exists. " +
+      "artifact_type must be one of: plan, build, todo, lessons_learned.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        feature_slug: { type: "string" },
+        artifact_type: {
+          type: "string",
+          enum: ["plan", "build", "todo", "lessons_learned"],
+          description: "Type of artifact: plan (Plan.md), build (Build.md), todo (ToDo.md), lessons_learned (Lessons-Learned.md).",
+        },
+        content: { type: "string", description: "Full markdown content of the artifact." },
+      },
+      required: ["feature_slug", "artifact_type", "content"],
     },
   },
 ];
@@ -1162,6 +1182,14 @@ export async function handleToolCall(toolName, args, apiKeyId) {
           `- github_log_filename is a valid path within the repo`
         );
       }
+    }
+
+    // ── save_artifact ─────────────────────────────────────────────────────
+    if (toolName === "save_artifact") {
+      const { feature_slug: slug, artifact_type, content } = args;
+      if (!content?.trim()) return text("ERROR: content must not be empty.");
+      await saveArtifact(apiKeyId, slug, artifact_type, content);
+      return text(`Artifact '${artifact_type}' saved for feature '${slug}'.`);
     }
 
     return text(`Unknown tool: ${toolName}`);
