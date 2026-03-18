@@ -6,9 +6,11 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { requireApiKey, trackUsage } from "./middleware/auth.js";
 import { TOOLS, handleToolCall } from "./mcp/tools.js";
+import adminRouter from "./admin/router.js";
 
 const app = express();
 app.use(express.json());
+app.use("/admin", adminRouter);
 
 // ── Health check (Railway uses this) ──────────────────────────────────────
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
@@ -67,7 +69,7 @@ function buildMcpServer(apiKeyId) {
 }
 
 // ── Startup validation ────────────────────────────────────────────────────
-for (const key of ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]) {
+for (const key of ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "ADMIN_PASSWORD"]) {
   if (!process.env[key]) {
     console.error(`FATAL: Missing required environment variable: ${key}`);
     process.exit(1);
