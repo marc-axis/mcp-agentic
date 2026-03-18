@@ -1,4 +1,4 @@
-import { html } from "../layout.js";
+import { html, escHtml } from "../layout.js";
 
 function timeAgo(dateStr) {
   if (!dateStr) return "never";
@@ -55,11 +55,11 @@ export function dashboardPage(kpis, activity) {
                   const teamName = row.api_keys?.teams?.name ?? "—";
                   const clientName = row.api_keys?.client_name ?? "Unknown";
                   return `
-                    <tr class="hover:bg-slate-50 transition-colors cursor-pointer" ${teamId ? `onclick="location.href='/admin/teams/${teamId}'"` : ""}>
+                    <tr class="hover:bg-slate-50 transition-colors cursor-pointer" ${teamId ? `onclick="location.href='/admin/teams/${escHtml(teamId)}'"` : ""}>
                       <td class="px-4 py-3 text-slate-500 mono text-xs">${timeAgo(row.called_at)}</td>
-                      <td class="px-4 py-3 font-medium">${clientName}</td>
-                      <td class="px-4 py-3 text-slate-600">${teamName}</td>
-                      <td class="px-4 py-3"><span class="mono text-xs bg-slate-100 px-2 py-0.5 rounded">${row.tool_name}</span></td>
+                      <td class="px-4 py-3 font-medium">${escHtml(clientName)}</td>
+                      <td class="px-4 py-3 text-slate-600">${escHtml(teamName)}</td>
+                      <td class="px-4 py-3"><span class="mono text-xs bg-slate-100 px-2 py-0.5 rounded">${escHtml(row.tool_name)}</span></td>
                     </tr>`;
                 }).join("")
             }

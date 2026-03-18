@@ -1,4 +1,4 @@
-import { html } from "../layout.js";
+import { html, escHtml } from "../layout.js";
 
 function timeAgo(dateStr) {
   if (!dateStr) return "never";
@@ -11,13 +11,13 @@ function timeAgo(dateStr) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-export function teamDetailPage(team) {
+export function teamDetailPage(team, csrfToken = "") {
   const body = `
     <div class="flex items-center gap-3 mb-6">
       <a href="/admin/teams" class="text-slate-400 hover:text-slate-600 transition-colors">
         <i data-lucide="arrow-left" class="w-4 h-4"></i>
       </a>
-      <a href="/admin/users/create?team=${team.id}"
+      <a href="/admin/users/create?team=${escHtml(team.id)}"
         class="ml-auto flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer">
         <i data-lucide="user-plus" class="w-4 h-4"></i> Add User
       </a>
@@ -36,10 +36,10 @@ export function teamDetailPage(team) {
         </thead>
         <tbody class="divide-y divide-slate-100">
           ${team.users.length === 0
-            ? `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-400">No users yet — <a href="/admin/users/create?team=${team.id}" class="text-blue-600 hover:underline">add one</a></td></tr>`
+            ? `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-400">No users yet — <a href="/admin/users/create?team=${escHtml(team.id)}" class="text-blue-600 hover:underline">add one</a></td></tr>`
             : team.users.map(u => `
                 <tr class="hover:bg-slate-50 transition-colors">
-                  <td class="px-5 py-3 font-medium">${u.client_name}</td>
+                  <td class="px-5 py-3 font-medium">${escHtml(u.client_name)}</td>
                   <td class="px-5 py-3 mono text-sm">${u.callsWeek.toLocaleString()}</td>
                   <td class="px-5 py-3 text-slate-500 text-xs">${timeAgo(u.lastActive)}</td>
                   <td class="px-5 py-3">
@@ -49,7 +49,9 @@ export function teamDetailPage(team) {
                   </td>
                   <td class="px-5 py-3 text-right">
                     ${u.is_active ? `
-                      <form method="POST" action="/admin/users/${u.id}/revoke" onsubmit="return confirm('Revoke access for ${u.client_name}? They will no longer be able to use AAFM.')">
+                      <form method="POST" action="/admin/users/${escHtml(u.id)}/revoke" onsubmit="return confirm('Revoke access for ${escHtml(u.client_name)}? They will no longer be able to use AAFM.')">
+                        <input type="hidden" name="_csrf" value="${escHtml(csrfToken)}">
+                        <input type="hidden" name="team_id" value="${escHtml(team.id)}">
                         <button type="submit" class="text-xs text-red-600 hover:text-red-800 font-medium cursor-pointer transition-colors">Revoke</button>
                       </form>` : ""
                     }
